@@ -1,3 +1,4 @@
+using System.Net;
 using BestMovies.API.DBContexts;
 using BestMovies.API.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,24 @@ builder.Services.AddDbContext<BestMoviesContext>(
 );
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler(configureApplicationBuilder =>
+    {
+        configureApplicationBuilder.Run(async context =>
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync("An unexpected problem occurred");
+        });
+    });
+
+    // app.UseExceptionHandler();
+}
 
 app.MapGet("/", () => "Today is: " + DateTime.Now);
 

@@ -11,19 +11,24 @@ namespace BestMovies.API.EndpointHandlers;
 public static class MoviesHandlers
 {
     public static async Task<Results<NoContent, Ok<IEnumerable<MovieDTO>>>> GetMoviesAsync(BestMoviesContext context,
-        IMapper mapper,
-        [FromQuery(Name = "movieName")] string? title)
+        IMapper mapper, ILogger<MovieDTO> logger, [FromQuery(Name = "movieName")] string? title)
     {
         var movies = await context.Movies
             .Where(m => title == null || m.Title.ToLower().Contains(title.ToLower()))
             .ToListAsync();
 
-        return movies.Count <= 0
-            ? TypedResults.NoContent()
-            : TypedResults.Ok(mapper.Map<IEnumerable<MovieDTO>>(movies));
+        if (movies.Count == 0)
+        {
+            logger.LogInformation("No movies found. Param: {title}", title);
+            return TypedResults.NoContent();
+        }
+        
+        logger.LogInformation("Movie found. Return: {movies}", movies[0].Title);
+        return TypedResults.Ok(mapper.Map<IEnumerable<MovieDTO>>(movies));
     }
 
-    public static async Task<Results<NotFound, Ok<MovieDTO>>> GetMoviesByIdAsync(BestMoviesContext context, IMapper mapper,
+    public static async Task<Results<NotFound, Ok<MovieDTO>>> GetMoviesByIdAsync(BestMoviesContext context,
+        IMapper mapper,
         int movieId)
     {
         var movieResult = await context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
