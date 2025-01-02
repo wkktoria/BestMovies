@@ -1,9 +1,10 @@
 using BestMovies.API.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BestMovies.API.DBContexts;
 
-public class BestMoviesContext(DbContextOptions<BestMoviesContext> options) : DbContext(options)
+public class BestMoviesContext(DbContextOptions<BestMoviesContext> options) : IdentityDbContext(options)
 {
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Director> Directors { get; set; }
